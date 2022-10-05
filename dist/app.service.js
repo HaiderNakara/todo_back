@@ -33,14 +33,29 @@ let AppService = class AppService {
         return await this.todoModel.find().exec();
     }
     async findtodoById(id) {
-        return await this.todoModel.findOne({
-            id,
-        }).exec();
+        try {
+            const temp = await this.todoModel.findOne({
+                id,
+            }).exec();
+            if (temp) {
+                return temp;
+            }
+            throw new common_1.NotFoundException('Todo not found');
+        }
+        catch (error) {
+            throw new common_1.BadRequestException();
+        }
     }
     async updatetodo(id, todo) {
-        const ntodo = await this.todoModel.findOne({ id }).exec();
-        if (ntodo) {
-            return await this.todoModel.findByIdAndUpdate(ntodo._id, todo, { new: true }).exec();
+        try {
+            const ntodo = await this.todoModel.findOne({ id }).exec();
+            if (ntodo) {
+                return await this.todoModel.findByIdAndUpdate(ntodo._id, todo, { new: true }).exec();
+            }
+            throw new common_1.NotFoundException('Todo not found');
+        }
+        catch (error) {
+            throw new common_1.BadRequestException();
         }
     }
     async deletetodo(id) {
@@ -48,6 +63,7 @@ let AppService = class AppService {
         if (ntodo) {
             return await this.todoModel.findByIdAndDelete(ntodo._id).exec();
         }
+        throw new common_1.NotFoundException('Todo not found');
     }
 };
 AppService = __decorate([

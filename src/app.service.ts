@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UpdatetodoDto } from './dto/update-cat.dto';
@@ -13,7 +13,6 @@ export class AppService {
     return 'Hello World!';
   }
   async createtodo(todo: Todo): Promise<Todo> {
-    // create a 4 digit id
     const id = Math.floor(1000 + Math.random() * 9000);
     const newtodo = new this.todoModel({ id, ...todo });
     return await newtodo.save();
@@ -22,14 +21,28 @@ export class AppService {
     return await this.todoModel.find().exec();
   }
   async findtodoById(id: string): Promise<Todo> {
-    return await this.todoModel.findOne({
-      id,
-    }).exec();
+    try {
+      const temp = await this.todoModel.findOne({
+        id,
+      }).exec();
+      if (temp) {
+        return temp;
+      }
+      throw new NotFoundException('Todo not found');
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
   async updatetodo(id: string, todo: UpdatetodoDto): Promise<Todo> {
-    const ntodo = await this.todoModel.findOne({ id }).exec();
-    if (ntodo) {
-      return await this.todoModel.findByIdAndUpdate(ntodo._id, todo, { new: true }).exec();
+    try {
+
+      const ntodo = await this.todoModel.findOne({ id }).exec();
+      if (ntodo) {
+        return await this.todoModel.findByIdAndUpdate(ntodo._id, todo, { new: true }).exec();
+      }
+      throw new NotFoundException('Todo not found');
+    } catch (error) {
+      throw new BadRequestException();
     }
   }
   async deletetodo(id: string): Promise<Todo> {
@@ -37,5 +50,6 @@ export class AppService {
     if (ntodo) {
       return await this.todoModel.findByIdAndDelete(ntodo._id).exec();
     }
+    throw new NotFoundException('Todo not found');
   }
 }
