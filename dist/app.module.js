@@ -15,11 +15,16 @@ const mongoose_1 = require("@nestjs/mongoose");
 const app_entity_1 = require("./entities/app.entity");
 const serve_static_1 = require("@nestjs/serve-static");
 const path_1 = require("path");
+const throttler_1 = require("@nestjs/throttler");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            throttler_1.ThrottlerModule.forRoot({
+                ttl: 60,
+                limit: 10,
+            }),
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(__dirname, '..', 'front'),
             }),
